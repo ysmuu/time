@@ -5,13 +5,15 @@
   <title>Random Sound Timer</title>
 </head>
 <body>
-  <h1>Random Sound Player</h1>
+  <h1>Random Sound Timer</h1>
 
-  <button onclick="startTimer()">Start Timer (10 sec)</button>
-  <button onclick="startUntilTime()">Wait Until 3:00 PM</button>
+  <label for="timeInput">Enter time in seconds:</label>
+  <input type="number" id="timeInput" min="1" value="10">
+  <button onclick="startCustomTimer()">Start Timer</button>
+
+  <p id="status"></p>
 
   <script>
-    // Add your sound file URLs (can be local or hosted)
     const sounds = [
       new Audio('sound1.mp3'),
       new Audio('sound2.mp3'),
@@ -19,39 +21,39 @@
       new Audio('sound4.mp3'),
       new Audio('sound5.mp3'),
       new Audio('sound6.mp3'),
-      new Audio('sound7.mp3')
+      new Audio('sound7.mp3'),
     ];
 
-    // Random play function
+    let timerId = null;
+
     function playRandomSound() {
       const index = Math.floor(Math.random() * sounds.length);
       sounds[index].play();
     }
 
-    // Wait for 10 seconds
-    function startTimer() {
-      setTimeout(() => {
-        alert("Time's up!");
-        playRandomSound();
-      }, 10000); // 10 seconds
-    }
+    function startCustomTimer() {
+      const timeInput = document.getElementById('timeInput');
+      const status = document.getElementById('status');
+      const seconds = parseInt(timeInput.value);
 
-    // Wait until specific time (e.g. 3:00 PM)
-    function startUntilTime() {
-      const targetHour = 15; // 3 PM in 24h format
-      const targetMinute = 0;
-
-      function checkTime() {
-        const now = new Date();
-        if (now.getHours() === targetHour && now.getMinutes() === targetMinute) {
-          alert("It's time!");
-          playRandomSound();
-        } else {
-          setTimeout(checkTime, 1000); // Check again in 1 second
-        }
+      // Clear any existing timer
+      if (timerId) {
+        clearTimeout(timerId);
+        timerId = null;
       }
 
-      checkTime();
+      if (isNaN(seconds) || seconds < 1) {
+        status.textContent = 'Please enter a valid number of seconds.';
+        return;
+      }
+
+      status.textContent = `Timer started for ${seconds} seconds...`;
+
+      timerId = setTimeout(() => {
+        status.textContent = "Time's up! Playing a random sound.";
+        playRandomSound();
+        timerId = null;
+      }, seconds * 1000);
     }
   </script>
 </body>
