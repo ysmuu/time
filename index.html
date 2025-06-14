@@ -1,65 +1,67 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Random Sound Timer (Looped)</title>
+  <meta charset="UTF-8" />
+  <title>Random Sound Player</title>
 </head>
 <body>
   <h1>Random Sound Player</h1>
 
   <label for="timeInput">Enter time in seconds:</label>
-  <input type="number" id="timeInput" min="1" value="5">
-  <button onclick="startCustomTimer()">Start Timer</button>
+  <input type="number" id="timeInput" min="1" value="5" />
+  <button id="startBtn">Start Timer</button>
 
   <p id="status"></p>
 
   <script>
-    const soundPaths = ['sound1.mp3', 'sound2.mp3', 'sound3.mp3', 'sound4.mp3', 'sound5.mp3', 'sound6.mp3', 'sound7.mp3'];
-    let currentAudio = null;
-    let timerId = null;
+    // List of sound files sound1.mp3 to sound7.mp3
+    const sounds = Array.from({ length: 7 }, (_, i) => `sound${i + 1}.mp3`);
+    let audio = null;
+    let timer = null;
+
+    const status = document.getElementById("status");
+    const startBtn = document.getElementById("startBtn");
+    const timeInput = document.getElementById("timeInput");
 
     function playRandomSound() {
-      // Pick random sound
-      const randomPath = soundPaths[Math.floor(Math.random() * soundPaths.length)];
-      const audio = new Audio(randomPath);
-      currentAudio = audio;
-
-      // When sound ends, play another one
-      audio.onended = () => {
-        playRandomSound();
-      };
-
-      audio.play();
+      const soundFile = sounds[Math.floor(Math.random() * sounds.length)];
+      if (audio) {
+        audio.pause();
+        audio = null;
+      }
+      audio = new Audio(soundFile);
+      audio.onended = playRandomSound;
+      audio.play().catch((e) => {
+        status.textContent = "Audio playback was prevented. Please interact with the page.";
+      });
+      status.textContent = `Playing: ${soundFile}`;
     }
 
-    function startCustomTimer() {
-      const timeInput = document.getElementById('timeInput');
-      const status = document.getElementById('status');
-      const seconds = parseInt(timeInput.value);
-
-      // Stop existing timer/audio
-      if (timerId) {
-        clearTimeout(timerId);
-        timerId = null;
-      }
-      if (currentAudio) {
-        currentAudio.pause();
-        currentAudio.currentTime = 0;
-      }
-
+    function startTimer() {
+      const seconds = parseInt(timeInput.value, 10);
       if (isNaN(seconds) || seconds < 1) {
-        status.textContent = 'Please enter a valid number of seconds.';
+        status.textContent = "Please enter a valid number greater than 0.";
         return;
       }
 
-      status.textContent = `Waiting ${seconds} seconds...`;
+      if (timer) {
+        clearTimeout(timer);
+        timer = null;
+      }
+      if (audio) {
+        audio.pause();
+        audio = null;
+      }
 
-      timerId = setTimeout(() => {
-        status.textContent = "Playing sounds...";
+      status.textContent = `Waiting for ${seconds} second(s)...`;
+      timer = setTimeout(() => {
+        status.textContent = "Starting sound playback...";
         playRandomSound();
-        timerId = null;
+        timer = null;
       }, seconds * 1000);
     }
+
+    startBtn.addEventListener("click", startTimer);
   </script>
 </body>
 </html>
